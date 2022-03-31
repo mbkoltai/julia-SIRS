@@ -96,6 +96,8 @@ vector_ode_prob = ODEProblem(vector_ode_sirs!,u0,tspan,ode_inputs);
 @time begin; sol_event=solve(vector_ode_prob,Tsit5(),callback=cb,tstops=dosetimes,saveat=1); end; # CallbackSet(
 # without CALLBACK
 # @time begin; sol_event=solve(vector_ode_prob,Tsit5(),saveat=1); end;
+# SAVE OUTPUT
+writedlm("plots/model_output.csv",round.([sol_event.t sol_event[:,1,:]'],digits=2))
 
 # plot prevalence of infections
 sel_vars = [4,5,6]; # reshape(ode_inputs[5][:,1:k_col],k_col*3)
@@ -120,11 +122,13 @@ plot(1:k_t,incid_inf[(1:3).+3,1:k_t]',size=(1200,600),
 # savefig("plot_inf1_3_scatter_line.svg")
 ################## ################## ##################
 # parameter sampling
-# p_new=copy(ode_inputs); 
-@time begin; 
+# 
+@time begin;
 for k_parsampl in 1:100
+if k_parsampl==1; p_new=copy(ode_inputs); end
 p_new[11]=rand(3:8); print(k_parsampl,", ")
 problem_update = remake(vector_ode_prob; p=p_new) # p_new being the new params being sampled
+# @time begin; sol_event=solve(vector_ode_prob,Tsit5(),callback=cb,tstops=dosetimes,saveat=1); end; # CallbackSet(
 sol_event=solve(problem_update,Tsit5(),callback=cb,tstops=dosetimes,saveat=1); 
 end
 print("\n end \n")
